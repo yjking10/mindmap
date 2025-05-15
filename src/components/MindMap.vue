@@ -58,8 +58,6 @@ const initMarkmap = (content) => {
   mdContent.value = content;
   if (!markmapContainer.value) return
 
-  // 使用 markmap-lib 转换 Markdown 为数据结构
-  const { root } = transformer.transform(content ?? '');
 
   // 创建 SVG 容器
   svgRef.value = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -68,8 +66,8 @@ const initMarkmap = (content) => {
 
   // 初始化 Markmap
   mm.value = Markmap.create(svgRef.value, { initialExpandLevel: 3, fitRatio: 1, spacingVertical: 16 });
-  mm.value.setData(root);
-  mm.value.fit();
+
+  update();
 }
 
 
@@ -77,6 +75,7 @@ const update = () => {
   const { root } = transformer.transform(mdContent.value);
   mm.value.setData(root);
   mm.value.fit();
+
 }
 
 
