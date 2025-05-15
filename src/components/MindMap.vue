@@ -74,7 +74,13 @@ const initMarkmap = (content) => {
 const update = () => {
   const { root } = transformer.transform(mdContent.value);
   mm.value.setData(root);
-  mm.value.fit();
+  nextTick(() => {
+    setTimeout(() => {
+      mm.value.fit();
+    }, 1000);
+
+  });
+
 
 }
 
