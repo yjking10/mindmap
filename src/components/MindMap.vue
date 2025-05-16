@@ -46,9 +46,9 @@ import html2canvas from 'html2canvas';
 // - axios
 // - dddd
 // `;
-onMounted(() => {
-  // initMarkmap(markdownContent);
-});
+// onMounted(() => {
+//   initMarkmap(markdownContent);
+// });
 
 const svgRef = ref();
 const markmapContainer = ref()
@@ -73,10 +73,10 @@ const initMarkmap = (content) => {
 }
 
 
-const update = () => {
+const update = async () => {
   const { root } = transformer.transform(mdContent.value);
-  mm.value.setData(root);
-  mm.value.fit();
+  await mm.value.setData(root);
+  await mm.value.fit();
 
 }
 
