@@ -46,7 +46,9 @@ import html2canvas from 'html2canvas';
 // - axios
 // - dddd
 // `;
-
+onMounted(() => {
+  // initMarkmap(markdownContent);
+});
 
 const svgRef = ref();
 const markmapContainer = ref()
@@ -74,13 +76,7 @@ const initMarkmap = (content) => {
 const update = () => {
   const { root } = transformer.transform(mdContent.value);
   mm.value.setData(root);
-  nextTick(() => {
-    setTimeout(() => {
-      mm.value.fit();
-    }, 1000);
-
-  });
-
+  mm.value.fit();
 
 }
 
@@ -138,6 +134,7 @@ const exportToImage = async () => {
     // 使用 html2canvas 截图
     const canvas = await html2canvas(markmapContainer.value, options);
 
+    // console.log(canvas.toDataURL('image/jpeg'));
 
 
     sendMessageToNative({ image: canvas.toDataURL('image/jpeg').split(',')[1] })
