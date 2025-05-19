@@ -1,7 +1,7 @@
 <template>
-  <div class="mindmap-wrapper">
-    <!-- <button @click="exportToJpeg">Export to JPEG</button> -->
-    <!-- <div className="control">
+
+  <!-- <button @click="exportToJpeg">Export to JPEG</button> -->
+  <!-- <div className="control">
       <div class="button-svg" @click="zoomIn">
         zoomIn
       </div>
@@ -15,8 +15,8 @@
       </div>
     </div> -->
 
-    <div ref="markmapContainer" class="markmap-container"></div>
-
+  <div ref="markmapContainer" class="markmap-container">
+    <svg ref="svgRef" class="mm-svg"></svg>
   </div>
 
 </template>
@@ -32,23 +32,27 @@ import html2canvas from 'html2canvas';
 
 
 
-// const markdownContent = `
-// # React 项目
-// ## 安装
-// - npm install
-// - yarn add
-// ## 组件
-// - Button
-// - Input
-// - Modal
-// ## API 调用
-// - fetch
-// - axios
-// - dddd
-// `;
-// onMounted(() => {
-//   initMarkmap(markdownContent);
-// });
+const markdownContent = `
+# React 项目
+## 安装
+- npm install
+- yarn add
+## 组件
+- Button
+- Input
+- Modal
+## API 调用
+- fetch
+- axios
+- dddd
+`;
+onMounted(() => {
+  //   initMarkmap(markdownContent);
+  // 初始化 Markmap
+  mm.value = Markmap.create(svgRef.value, { initialExpandLevel: 3, fitRatio: 1, spacingVertical: 16 });
+
+  setMindMapContent(markdownContent)
+});
 
 const svgRef = ref();
 const markmapContainer = ref()
@@ -56,27 +60,31 @@ const mdContent = ref('');
 const mm = ref()
 
 
-const initMarkmap = (content) => {
-  mdContent.value = content;
-  if (!markmapContainer.value) return
+// const initMarkmap = (content) => {
+//   mdContent.value = content;
+//   if (!markmapContainer.value) return
 
 
-  // 创建 SVG 容器
-  svgRef.value = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svgRef.value.classList.add('mm-svg');
-  markmapContainer.value.appendChild(svgRef.value);
+//   // 创建 SVG 容器
+//   // svgRef.value = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+//   // svgRef.value.classList.add('mm-svg');
+//   // markmapContainer.value.appendChild(svgRef.value);
 
-  // 初始化 Markmap
-  mm.value = Markmap.create(svgRef.value, { initialExpandLevel: 3, fitRatio: 1, spacingVertical: 16 });
 
-  update();
-}
+//   update();
+// }
 
 
 const update = async () => {
   const { root } = transformer.transform(mdContent.value);
+  await nextTick()
   await mm.value.setData(root);
-  await mm.value.fit();
+  await nextTick()
+  setTimeout(() => {
+    mm.value.fit();
+  }, 500);
+  console.log(' mm.value.g .size', mm.value.g.size.width);
+
 
 }
 
@@ -147,7 +155,7 @@ const exportToImage = async () => {
 
 
 onBeforeMount(() => {
-  window.initMarkmap = initMarkmap;
+  // window.initMarkmap = initMarkmap;
   window.setMindMapContent = setMindMapContent;
   window.zoomIn = zoomIn;
   window.zoomOut = zoomOut;
@@ -155,12 +163,6 @@ onBeforeMount(() => {
   window.exportToJpeg = exportToJpeg;
 });
 
-
-onMounted(() => {
-
-
-  // initMarkmap('# ddddd')
-});
 
 
 const sendMessageToNative = (message) => {
@@ -177,7 +179,14 @@ const sendMessageToNative = (message) => {
   }
 }
 
-onUpdated(update);
+// onUpdated(update);
+onUpdated(() => {
+  console.log('onUpdated');
+
+  // if (mm.value) {
+  //   mm.value.fit();
+  // }
+});
 
 onUnmounted(() => {
   if (mm.value) {
@@ -190,38 +199,30 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss">
-.mindmap-wrapper {
+.markmap-container {
   width: 100vw;
   height: 100vh;
   background-color: #fff;
   position: relative;
-
-  .markmap-container {
-    width: 100%;
-    height: 100%;
-    background-color: #fff;
-
-  }
-
-
-  .mm-svg {
-    width: 100%;
-    height: 100%;
-    background-color: #fff;
-
-    .markmap {
-      background-color: #fff;
-      color: #fff;
-    }
-
-    .markmap-node {
-      cursor: pointer;
-      fill: #20202C;
-      color: #20202C;
-    }
-  }
-
-
-  // background-color: var(--color-background);
+  display: flex;
 }
-</style>
+
+
+.mm-svg {
+  flex: 1;
+  background-color: #fff;
+
+  .markmap {
+    background-color: #fff;
+    color: #fff;
+  }
+
+  .markmap-node {
+    cursor: pointer;
+    fill: #20202C;
+    color: #20202C;
+  }
+}
+
+
+// background-color: var(--color-background);</style>
