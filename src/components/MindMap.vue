@@ -16,7 +16,7 @@
     </div> -->
 
   <div ref="markmapContainer" class="markmap-container">
-    <svg ref="svgRef" class="mm-svg"></svg>
+    <svg id="markmap" ref="svgRef"></svg>
   </div>
 
 </template>
@@ -29,35 +29,33 @@ import { transformer } from '../lib/markmap';
 
 import html2canvas from 'html2canvas';
 
-
-
-
-const markdownContent = `
-# React 项目
-## 安装
-- npm install
-- yarn add
-## 组件
-- Button
-- Input
-- Modal
-## API 调用
-- fetch
-- axios
-- dddd
-`;
-onMounted(() => {
-  //   initMarkmap(markdownContent);
-  // 初始化 Markmap
-  mm.value = Markmap.create(svgRef.value, { initialExpandLevel: 3, fitRatio: 1, spacingVertical: 16 });
-
-  setMindMapContent(markdownContent)
-});
-
 const svgRef = ref();
 const markmapContainer = ref()
 const mdContent = ref('');
-const mm = ref()
+let mm;
+// const markdownContent = `# Markmap
+// # React 项目
+// ## 安装
+// - npm install
+// - yarn add
+// ## 组件
+// - Button
+// - Input
+// - Modal
+// ## API 调用
+// - fetch
+// - axios
+// - dddd
+// `;
+onMounted(() => {
+  //   initMarkmap(markdownContent);
+  // 初始化 Markmap
+  mm = Markmap.create(svgRef.value, { initialExpandLevel: 3, fitRatio: 1, spacingVertical: 16 });
+
+  // setMindMapContent(markdownContent)
+});
+
+
 
 
 // const initMarkmap = (content) => {
@@ -77,16 +75,32 @@ const mm = ref()
 
 const update = async () => {
   const { root } = transformer.transform(mdContent.value);
-  await nextTick()
-  await mm.value.setData(root);
-  await nextTick()
+  const filteredRoot = filterImageNodes(root);
+  await mm.setData(filteredRoot);
   setTimeout(() => {
-    mm.value.fit();
-  }, 500);
-  console.log(' mm.value.g .size', mm.value.g.size.width);
-
-
+    mm.fit();
+  }, 1000);
 }
+
+const filterImageNodes = (node) => {
+  if (typeof node.content === "string") {
+    node.content = node.content.replace(/<img[^>]*>/g, "").trim();
+  }
+  if (Array.isArray(node.children)) {
+    node.children = node.children
+      .map(filterImageNodes)
+      .filter(
+        (child) =>
+          child != null &&
+          ((typeof child.content === "string" &&
+            child.content.length > 0) ||
+            (Array.isArray(child.children) && child.children.length > 0))
+      );
+  }
+  return node;
+}
+
+
 
 
 
@@ -99,28 +113,31 @@ const setMindMapContent = (message) => {
   return true;
 };
 const zoomIn = async () => {
-  await mm.value.rescale(1.2);
+  await mm.rescale(1.2);
 
   return true;
 };
 
 const zoomOut = async () => {
-  await mm.value.rescale(0.8);
+  await mm.rescale(0.8);
 
   return true;
 };
 
 const onFit = async () => {
 
-  await mm.value.fit();
+  await mm.fit();
   return true;
 };
 
 const exportToJpeg = () => {
 
+
+
   exportToImage();
 
 };
+
 
 
 const exportToImage = async () => {
@@ -179,19 +196,12 @@ const sendMessageToNative = (message) => {
   }
 }
 
-// onUpdated(update);
-onUpdated(() => {
-  console.log('onUpdated');
+onUpdated(update);
 
-  // if (mm.value) {
-  //   mm.value.fit();
-  // }
-});
 
 onUnmounted(() => {
-  if (mm.value) {
-
-    mm.value.destroy();
+  if (mm) {
+    mm.destroy();
   }
 
 })
@@ -208,8 +218,9 @@ onUnmounted(() => {
 }
 
 
-.mm-svg {
-  flex: 1;
+#markmap {
+  width: 100%;
+  height: 100%;
   background-color: #fff;
 
   .markmap {
