@@ -7,6 +7,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue(), vueDevTools()],
+  cors: true, // 启用CORS
   base: '', // 使用相对路径
   build: {
     minify: false, // 禁用所有压缩（JS/CSS/HTML）
