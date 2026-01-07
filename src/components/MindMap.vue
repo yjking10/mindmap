@@ -77,9 +77,10 @@ const update = async () => {
   const { root } = transformer.transform(mdContent.value);
   const filteredRoot = filterImageNodes(root);
   await mm.setData(filteredRoot);
-  setTimeout(() => {
-    mm.fit();
-  }, 1000);
+  mm.fit();
+  // setTimeout(() => {
+
+  // }, 1000);
 }
 
 const filterImageNodes = (node) => {
