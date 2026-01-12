@@ -73,14 +73,14 @@ onMounted(() => {
 // }
 
 
-const update = async () => {
+const update = () => {
   const { root } = transformer.transform(mdContent.value);
   const filteredRoot = filterImageNodes(root);
-  await mm.setData(filteredRoot);
-  mm.fit();
-  // setTimeout(() => {
-
-  // }, 1000);
+  mm.setData(filteredRoot).then(() => {
+    setTimeout(() => {
+      mm.fit();
+    }, 600);
+  });
 }
 
 const filterImageNodes = (node) => {
@@ -113,39 +113,34 @@ const setMindMapContent = (message) => {
 
   return true;
 };
-const zoomIn = async () => {
-  await mm.rescale(1.2);
+const zoomIn = () => {
+  mm.rescale(1.2);
 
   return true;
 };
 
-const zoomOut = async () => {
-  await mm.rescale(0.8);
+const zoomOut = () => {
+  mm.rescale(0.8);
 
   return true;
 };
 
-const onFit = async () => {
-
-  await mm.fit();
+const onFit = () => {
+  mm.fit();
   return true;
 };
 
 const exportToJpeg = () => {
-
-
-
-  exportToImage();
-
+  _exportToImage();
 };
 
 
 
-const exportToImage = async () => {
+const _exportToImage = async () => {
   try {
 
-    await onFit();
-    await nextTick()
+    onFit();
+    await nextTick();
 
     let scale = window.devicePixelRatio
 
