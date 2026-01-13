@@ -73,14 +73,12 @@ onMounted(() => {
 // }
 
 
-const update = () => {
+const update = async () => {
   const { root } = transformer.transform(mdContent.value);
   const filteredRoot = filterImageNodes(root);
-  mm.setData(filteredRoot).then(() => {
-    setTimeout(() => {
-      mm.fit();
-    }, 600);
-  });
+  await mm.setData(filteredRoot);
+  await mm.rescale(1.0);
+  await mm.fit();
 }
 
 const filterImageNodes = (node) => {
