@@ -1,6 +1,6 @@
 <template>
 
-  <!-- <button @click="exportToJpeg">Export to JPEG</button> -->
+  <button @click="exportToJpeg">Export to JPEG</button> 
   <!-- <div className="control">
       <div class="button-svg" @click="zoomIn">
         zoomIn
@@ -33,26 +33,26 @@ const svgRef = ref();
 const markmapContainer = ref()
 const mdContent = ref('');
 let mm;
-// const markdownContent = `# Markmap
-// # React 项目
-// ## 安装
-// - npm install
-// - yarn add
-// ## 组件
-// - Button
-// - Input
-// - Modal
-// ## API 调用
-// - fetch
-// - axios
-// - dddd
-// `;
+const markdownContent = `# Markmap
+# React 项目
+## 安装
+- npm install
+- yarn add
+## 组件
+- Button
+- Input
+- Modal
+## API 调用
+- fetch
+- axios
+- dddd
+`;
 onMounted(() => {
   //   initMarkmap(markdownContent);
   // 初始化 Markmap
   mm = Markmap.create(svgRef.value, { initialExpandLevel: 3, fitRatio: 1, spacingVertical: 16 });
 
-  // setMindMapContent(markdownContent)
+  setMindMapContent(markdownContent)
 });
 
 
@@ -153,7 +153,7 @@ const _exportToImage = async () => {
     // 使用 html2canvas 截图
     const canvas = await html2canvas(markmapContainer.value, options);
 
-    // console.log(canvas.toDataURL('image/jpeg'));
+    console.log(canvas.toDataURL('image/jpeg'));
 
 
     sendMessageToNative({ image: canvas.toDataURL('image/jpeg').split(',')[1] })
