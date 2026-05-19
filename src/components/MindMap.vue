@@ -33,26 +33,26 @@ const svgRef = ref();
 const markmapContainer = ref()
 const mdContent = ref('');
 let mm;
-const markdownContent = `# Markmap
-# React 项目
-## 安装
-- npm install
-- yarn add
-## 组件
-- Button
-- Input
-- Modal
-## API 调用
-- fetch
-- axios
-- dddd
-`;
+// const markdownContent = `# Markmap
+// # React 项目
+// ## 安装
+// - npm install
+// - yarn add
+// ## 组件
+// - Button
+// - Input
+// - Modal
+// ## API 调用
+// - fetch
+// - axios
+// - dddd
+// `;
 onMounted(() => {
   //   initMarkmap(markdownContent);
   // 初始化 Markmap
   mm = Markmap.create(svgRef.value, { initialExpandLevel: 3, fitRatio: 1, spacingVertical: 16 });
 
-  setMindMapContent(markdownContent)
+  // setMindMapContent(markdownContent)
 });
 
 
@@ -132,26 +132,95 @@ const exportToJpeg = () => {
   _exportToImage();
 };
 
+const waitForRender = async () => {
+  await nextTick();
+  await new Promise(requestAnimationFrame);
+
+  if (document.fonts?.ready) {
+    await document.fonts.ready;
+  }
+};
+
+const getExportRect = () => {
+  const rect = mm?.state?.rect;
+  if (!rect) return null;
+
+  const width = rect.x2 - rect.x1;
+  const height = rect.y2 - rect.y1;
+  if (width <= 0 || height <= 0) return null;
+
+  return {
+    x: rect.x1,
+    y: rect.y1,
+    width,
+    height,
+  };
+};
+
+const createExportContainer = (rect) => {
+  const padding = 32;
+  const width = Math.ceil(rect.width + padding * 2);
+  const height = Math.ceil(rect.height + padding * 2);
+  const svgClone = svgRef.value.cloneNode(true);
+  const zoomGroup = Array.from(svgClone.children).find((child) => child.tagName.toLowerCase() === 'g');
+
+  svgClone.removeAttribute('id');
+  svgClone.setAttribute('width', `${width}`);
+  svgClone.setAttribute('height', `${height}`);
+  svgClone.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svgClone.style.width = `${width}px`;
+  svgClone.style.height = `${height}px`;
+  svgClone.style.backgroundColor = '#fff';
+
+  if (zoomGroup) {
+    zoomGroup.setAttribute('transform', `translate(${padding - rect.x}, ${padding - rect.y})`);
+  }
+
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.left = '-100000px';
+  container.style.top = '0';
+  container.style.width = `${width}px`;
+  container.style.height = `${height}px`;
+  container.style.overflow = 'hidden';
+  container.style.background = '#fff';
+  container.appendChild(svgClone);
+  document.body.appendChild(container);
+
+  return { container, width, height };
+};
+
 
 
 const _exportToImage = async () => {
+  let exportContainer;
+
   try {
 
-    onFit();
-    await nextTick();
+    await waitForRender();
 
-    let scale = window.devicePixelRatio
+    const rect = getExportRect();
+    if (!rect) throw new Error('Invalid markmap export bounds');
+
+    const exportTarget = createExportContainer(rect);
+    exportContainer = exportTarget.container;
+
+    const scale = window.devicePixelRatio;
 
     const options = {
-      scale: scale,                  // 缩放倍数（提高分辨率）
+      scale,                  // 缩放倍数（提高分辨率）
       useCORS: true,            // 允许加载跨域资源
       allowTaint: true,         // 允许污染画布（需配合useCORS）
       backgroundColor: '#fff',   // 强制白色背景
       logging: false,           // 关闭调试日志
+      width: exportTarget.width,
+      height: exportTarget.height,
+      windowWidth: exportTarget.width,
+      windowHeight: exportTarget.height,
 
     };
     // 使用 html2canvas 截图
-    const canvas = await html2canvas(markmapContainer.value, options);
+    const canvas = await html2canvas(exportContainer, options);
 
     console.log(canvas.toDataURL('image/jpeg'));
 
@@ -160,6 +229,8 @@ const _exportToImage = async () => {
 
   } catch (err) {
     console.error('导出失败:', err);
+  } finally {
+    exportContainer?.remove();
   }
 }
 
